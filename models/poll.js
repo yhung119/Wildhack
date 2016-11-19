@@ -1,9 +1,9 @@
 var mongoose = require('mongoose');
-var voteSchema = new mongoose.Schema({ip: 'String'});
+var voteSchema = new mongoose.Schema({user: String});
 
 var choiceSchma = new mongoose.Schema({
 	text : String,
-	vote : [voteSchema]
+	votes : [voteSchema]
 });
 exports.PollSchema = new mongoose.Schema({
 	question: {type: String, required: true},

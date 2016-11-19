@@ -20,12 +20,13 @@ app.set('port', port);
  */
 
 var server = http.createServer(app);
-
-/**
- * Listen on provided port, on all network interfaces.
- */
-
-server.listen(port);
+var io = require('socket.io').listen(server);
+var routes = require('../routes');
+io.sockets.on('connection', routes.vote);
+ 
+server.listen(app.get('port'), function(){
+  console.log('Express server listening on port ' + app.get('port'));
+});
 server.on('error', onError);
 server.on('listening', onListening);
 
