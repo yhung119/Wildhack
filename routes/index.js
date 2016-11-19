@@ -3,7 +3,11 @@ var express = require('express');
 var router = express.Router();
 var mongoose = require('mongoose');
 //db connections, get poll database
-var db = mongoose.createConnection('localhost', 'pollsapp')
+var mongo_url = "mongodb://user1:user1@ds159237.mlab.com:59237/wildhack";
+
+mongoose.connect(mongo_url);
+var db = mongoose.connection;
+db.on('error', console.error.bind(console, 'connection error:'));
 var PollSchema = require('../models/poll.js').PollSchema;
 var Poll = db.model('polls', PollSchema);
 
