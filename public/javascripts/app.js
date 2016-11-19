@@ -1,4 +1,4 @@
-angular.module('polls', [])
+angular.module('polls', ['pollServices'])
           .config(['$routeProvider', function($routeProvider) {
             $routeProvider.
               when('/polls', { templateUrl: 'partials/list.html', controller: 
