@@ -81,7 +81,7 @@ router.vote = function(socket){
 
 
 /* GET Home Page */
-router.get('/home', isAuthenticated, function(req, res, next){
+router.get('/home',  function(req, res, next){
   res.render('poll', { title : 'Polls', user: req.user });
 });
 
