@@ -160,7 +160,27 @@ router.get('/polls/:id', function(req,res,next){
   });
 })
 
+// var getData = function performAsyncOperation(data, onCompletion) {
+//     var bag = [];
+//     var box = [];
+//     var count  = 0;
 
+//     async.forEach(data.item, function(item, callback){
+//         async.forEach(item.name, function(name, callback){
+//             count += 1;
+//             callApi(item.name, function(obj){
+//                bag.push(obj);
+//                count -= 1;
+//                if (count == 0) {
+//                    onCompletion(null, { bag:bag, box:box });
+//                }
+//             });
+//             callback();
+//         }
+//        box.push(item);
+//        callback();
+//     });
+// }
 router.post('/polls', function(req,res,next){
   var user = req.user;
   console.log('user.preference',user.preference);
