@@ -100,7 +100,7 @@ router.get('/login/facebook',
   // handle the callback after facebook has authenticated the user
 router.get('/login/facebook/callback',
   passport.authenticate('facebook', {
-    successRedirect : '/home',
+    successRedirect : '/ppap',
     failureRedirect : '/',
     scope: ['email', 'name']
   })
