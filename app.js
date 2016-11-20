@@ -27,9 +27,12 @@ app.use(express.static(path.join(__dirname, 'public')));
 /// Passport code for user auth
 var passport = require('passport');
 var expressSession = require('express-session');
-var RedisStore = require('connect-redis')(expressSession)
+var MongoStore = require('connect-mongo')(expressSession);
 // this is really important
-app.use(expressSession({ secret: 'anything' }));
+app.use(expressSession({
+	secret: 'foo',
+    store: new MongoStore({ url: "mongodb://user1:user1@ds159237.mlab.com:59237/wildhack" })
+}));
 app.use(passport.initialize());
 app.use(passport.session());
 var initPassport = require('./auth/init');
