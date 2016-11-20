@@ -81,7 +81,7 @@ router.vote = function(socket){
 
 
 /* GET Home Page */
-router.get('/home',  function(req, res, next){
+router.get('/home', isAuthenticated, function(req, res, next){
   res.render('poll', { title : 'Polls', user: req.user });
 });
 
@@ -106,9 +106,6 @@ router.get('/login/facebook/callback',
   })
 );
 
-router.get('/ppap',function(req,res,next){
-  res.render('poll', {title : 'Polls'});
-})  
   // JSON API for list of polls
 router.get('/polls/polls', function(req, res, next){
   Poll.find({}, 'question', function(error, polls){
@@ -161,37 +158,35 @@ router.get('/polls/:id', function(req,res,next){
 
 
 router.post('/polls', function(req,res,next){
-  yelp.search({ term: 'Asian food', location: 'Champaign' })
-    .then(function (data) {
-      //console.log(data.businesses);
-      var food = data.businesses;
-      var choices = [];
-      for(var i = 1; i < 4; i++){
-        choices.push({text: food[i].name, votes:[]});
-      }
-      console.log(choices);
-      var pollObj = {question: 'Question 3', choices: choices};
-      var poll = new Poll(pollObj);
+  var user = req.user;
+  console.log('user.preference',user.preference);
+  var preference = user.preference;
+  
+  yelp.search({ term: "Mexican Food", location: 'Champaign' })
+      .then(function (data) {
+        //console.log(data.businesses);
+        var food = data.businesses;
+        var choices = [];
+        for(var i = 0; i < 5; i++){
+          choices.push({text: food[i].name, votes:[]});
+        }
+        console.log(choices);
+        var pollObj = {question: 'Question 3', choices: choices};
+        var poll = new Poll(pollObj);
 
-      poll.save(function(err, doc) {
-      if(err || !doc) {
-        throw 'Error';
-      } else {
-        res.json(doc);
-        res.send({redirect: '/#/poll'+doc._id});
-      }   
-    })
-    .catch(function (err) {
-      console.error(err);
+        poll.save(function(err, doc) {
+        if(err || !doc) {
+          throw 'Error';
+        } else {
+          res.json(doc);
+          //res.send({redirect: '/#/poll'+doc._id});
+        }   
+      })
+      .catch(function (err) {
+        console.error(err);
+      });
     });
 
-    //console.log("outer",food[1].name);
-  // var choices = [];
-  // if(data){
-  //   choices = [{data[1].name, votes:[]}, {data[2].name, votes:[]}, {data[3].name}];
-  // }
-  
-  });
 })
 
 

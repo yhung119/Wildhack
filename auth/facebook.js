@@ -38,7 +38,7 @@ module.exports = function(passport) {
 	                newUser.firstName  = profile.name.givenName;
 	                newUser.lastName = profile.name.familyName; // look at the passport user profile to see how names are returned
 	                newUser.email = profile.emails[0].value; // facebook can return multiple emails so we'll take the first
-
+	                newUser.preference = ["Asian Food","Mexican Food"];
 					// save our user to the database
 	                newUser.save(function(err) {
 	                    if (err)

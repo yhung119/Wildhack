@@ -32,7 +32,7 @@ function PollItemCtrl($scope, $routeParams, socket, Poll) {
 }
 
 // Creating a new poll
-function PollNewCtrl($scope, Poll) {
+function PollNewCtrl($scope, $location, Poll) {
   $scope.poll = {
     question: '',
     choices: [{ text: '' }, { text: '' }, { text: '' }]
@@ -44,13 +44,14 @@ function PollNewCtrl($scope, Poll) {
     var poll = $scope.poll;
     
     var newPoll = new Poll(poll);       
-                newPoll.$save(function(p, resp) {
-                  if(!p.error) { 
-                    $location.path('polls');
-                  } else {
-                    alert('Could not create poll');
-                  }
-                });
+    newPoll.$save(function(p, resp) {
+      if(!p.error) { 
+        $location.path('polls');
+      } else {
+        alert('Could not create poll');
+      }
+    });
+    console.log("angular");
     // if(poll.question.length > 0) {
     //           var choiceCount = 0;
     //           for(var i = 0, ln = poll.choices.length; i < ln; i++) {

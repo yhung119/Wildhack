@@ -8,4 +8,5 @@ module.exports = mongoose.model('User',{
 	lastName: String,
 	email: String,
 	owned: [poll],
+	preference: [String]
 });
