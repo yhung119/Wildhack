@@ -1,82 +1,42 @@
 // import libraries
 var express = require('express');
 var router = express.Router();
+
 var mongoose = require('mongoose');
 //db connections, get poll database
 var mongo_url = "mongodb://user1:user1@ds159237.mlab.com:59237/wildhack";
+var passport = require('passport');
 
 mongoose.connect(mongo_url);
 var db = mongoose.connection;
 db.on('error', console.error.bind(console, 'connection error:'));
 var PollSchema = require('../models/poll.js').PollSchema;
 var Poll = db.model('polls', PollSchema);
-
-/* GET home page. */
-router.get('/', function(req, res, next) {
-  res.render('index', { title: 'Polls' });
-});
-
-// JSON API for list of polls
-router.get('/polls/polls', function(req, res, next){
-	Poll.find({}, 'question', function(error, polls){
-		res.json(polls);
-	});
-});
-// display specific question poll result
-router.get('/polls/:id', function(req,res,next){
-	var pollId = req.params.id;
-  	Poll.findById(pollId, '', { lean: true }, function(err, poll) {
-    if(poll) {
-      var userVoted = false,
-          userChoice,
-          totalVotes = 0;
-      for(c in poll.choices) {
-        var choice = poll.choices[c]; 
-        for(v in choice.votes) {
-          var vote = choice.votes[v];
-          totalVotes++;
-          if(vote.user === "Daniel") {
-            userVoted = true;
-            userChoice = { _id: choice._id, text: choice.text };
-          }
-        }
-      }
-      poll.userVoted = userVoted;
-      poll.userChoice = userChoice;
-      poll.totalVotes = totalVotes;
-      res.json(poll);
-    } else {
-      res.json({error:true});
-    }
-  });
-})
-
-router.post('/polls', function(req,res,next){
-	var reqBody = req.body,
-      choices = reqBody.choices.filter(function(v) { return v.text != ''; }),
-      pollObj = {question: reqBody.question, choices: choices};
-    console.log(choices)
-  	var poll = new Poll(pollObj);
-  	poll.save(function(err, doc) {
-    if(err || !doc) {
-      throw 'Error';
-    } else {
-      res.json(doc);
-    }   
-  });
-})
-
-
+var User = require('../models/user.js');
+var curr_user = '';
+///login
+var isAuthenticated = function (req, res, next) {
+  // if user is authenticated in the session, call the next() to call the next request handler 
+  // Passport adds this method to request object. A middleware is allowed to add properties to
+  // request and response objects
+  if (req.isAuthenticated()){
+    curr_user = req.user;
+    return next();
+  }
+  // if the user is not authenticated then redirect him to the login page
+  res.redirect('/')
+}
 // Socket Api for vote
 router.vote = function(socket){
-	console.log("vote is called");
-	socket.on('send:vote', function(data) {
-      //var ip = socket.handshake.headers['x-forwarded-for'] || socket.handshake.address.address;
-      var user = "Paul";
+  console.log("vote is called");
+  socket.on('send:vote', function(data) {
+      var user = '';
+      if(curr_user != ''){
+        user = curr_user.id;
+      }
       Poll.findById(data.poll_id, function(err, poll) {
       var choice = poll.choices.id(data.choice);
-      console.log(data, choice.votes);
-      choice.votes.push({ user: user});      
+      choice.votes.push({ user: user});  
       poll.save(function(err, doc) {
         var theDoc = { 
           question: doc.question, _id: doc._id, choices: doc.choices, 
@@ -100,6 +60,116 @@ router.vote = function(socket){
       });
     });
 };
+
+
+  /* GET login page. */
+  router.get('/', function(req, res, next) {
+      // Display the Login page with any flash message, if any
+    res.render('index', { title : "Polls" });
+  });
+
+
+/* GET Home Page */
+router.get('/home', isAuthenticated, function(req, res, next){
+  res.render('poll', { title : 'Polls', user: req.user });
+});
+
+/* Handle Logout */
+router.get('/signout', function(req, res, next) {
+  req.logout();
+  res.redirect('/');
+});
+
+// route for facebook authentication and login
+// different scopes while logging in
+router.get('/login/facebook', 
+  passport.authenticate('facebook', { scope : 'email' }
+));
+
+  // handle the callback after facebook has authenticated the user
+router.get('/login/facebook/callback',
+  passport.authenticate('facebook', {
+    successRedirect : '/home',
+    failureRedirect : '/',
+    scope: ['email', 'name']
+  })
+);
+
+router.get('/ppap',function(req,res,next){
+  res.render('poll', {title : 'Polls'});
+})  
+  // JSON API for list of polls
+router.get('/polls/polls', function(req, res, next){
+  Poll.find({}, 'question', function(error, polls){
+    res.json(polls);
+  });
+});
+// display specific question poll result
+router.get('/polls/:id', function(req,res,next){
+  var user = req.user.id;
+  var pollId = req.params.id;
+  console.log('pollId',pollId);
+    Poll.findById(pollId, '', { lean: true }, function(err, poll) {
+    if(poll) {
+      var temp_userVoted = false;
+      for(c in poll.choices) {
+        var choice = poll.choices[c];
+        console.log('choice', choice); 
+        if(temp_userVoted){
+          break;
+        }
+        for(v in choice.votes) {
+          var vote = choice.votes[v];
+          console.log('vote', vote);
+          if(vote.user === user) {
+            temp_userVoted = true;
+            break;
+          }
+        }
+      }
+      console.log('temp_userVoted', temp_userVoted);
+      var userVoted = temp_userVoted,
+          userChoice,
+          totalVotes = 0;
+      for(c in poll.choices) {
+        var choice = poll.choices[c]; 
+        for(v in choice.votes) {
+          var vote = choice.votes[v];
+          totalVotes++;
+          if(vote.user === user) {
+            userVoted = true;
+            userChoice = { _id: choice._id, text: choice.text };
+          }
+        }
+      }
+      poll.userVoted = userVoted;
+      poll.userChoice = userChoice;
+      poll.totalVotes = totalVotes;
+      res.json(poll);
+    } else {
+      res.json({error:true});
+    }
+  });
+})
+
+router.post('/polls', function(req,res,next){
+  var reqBody = req.body,
+      choices = reqBody.choices.filter(function(v) { return v.text != ''; }),
+      pollObj = {question: reqBody.question, choices: choices};
+    var poll = new Poll(pollObj);
+
+    poll.save(function(err, doc) {
+    if(err || !doc) {
+      throw 'Error';
+    } else {
+      res.json(doc);
+      res.send({redirect: '/#/poll'+doc._id});
+    }   
+  });
+})
+
+
+
 
 
 module.exports = router;

@@ -21,6 +21,23 @@ app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
+ 
+
+
+/// Passport code for user auth
+var passport = require('passport');
+var expressSession = require('express-session');
+var RedisStore = require('connect-redis')(expressSession)
+// this is really important
+app.use(expressSession({ secret: 'anything' }));
+app.use(passport.initialize());
+app.use(passport.session());
+var initPassport = require('./auth/init');
+initPassport(passport);
+var flash = require('connect-flash');
+app.use(flash());
+
+
 
 app.use('/', index);
 app.use('/users', users);
