@@ -26,17 +26,14 @@ app.use(express.static(path.join(__dirname, 'public')));
 
 /// Passport code for user auth
 var passport = require('passport');
-var session = require('express-session');
-var RedisStore = require('connect-redis')(session);
-app.use(session({
-    store: new RedisStore(options),
-    secret: 'keyboard cat'
-}));
+var expressSession = require('express-session');
+var RedisStore = require('connect-redis')(expressSession)
+// this is really important
+app.use(expressSession({ secret: 'anything' }));
 app.use(passport.initialize());
 app.use(passport.session());
 var initPassport = require('./auth/init');
 initPassport(passport);
-
 
 
 
