@@ -72,12 +72,12 @@ router.vote = function(socket){
 };
 
 
-  /* GET login page. */
-  router.get('/', function(req, res, next) {
-      // Display the Login page with any flash message, if any
-  
-    res.render('index', { title : "Polls" });
-  });
+/* GET login page. */
+router.get('/', function(req, res, next) {
+    // Display the Login page with any flash message, if any
+
+  res.render('index', { title : "Polls" });
+});
 
 
 /* GET Home Page */
@@ -105,6 +105,10 @@ router.get('/login/facebook/callback',
     scope: ['email', 'name']
   })
 );
+
+router.get('/ppap',function(req,res,next){
+  res.render('home',{user: req.user});
+})
 
   // JSON API for list of polls
 router.get('/polls/polls', function(req, res, next){
