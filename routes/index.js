@@ -26,9 +26,19 @@ var isAuthenticated = function (req, res, next) {
   // if the user is not authenticated then redirect him to the login page
   res.redirect('/')
 }
+
+//yelp api
+var Yelp = require('yelp');
+
+var yelp = new Yelp({
+  consumer_key: 'gLuYHAYcXRewqUmCFD8nQw',
+  consumer_secret: 'EKeSrHWDLxAcVtGfBlV1FPPVU7Y',
+  token: 'MterUEI1N6NHEoI5PYOuy7R6miwTVzbV',
+  token_secret: '4UsxJ_10D2vR7vNSwvgVIG5PYsE',
+});
+
 // Socket Api for vote
 router.vote = function(socket){
-  console.log("vote is called");
   socket.on('send:vote', function(data) {
       var user = '';
       if(curr_user != ''){
@@ -65,6 +75,7 @@ router.vote = function(socket){
   /* GET login page. */
   router.get('/', function(req, res, next) {
       // Display the Login page with any flash message, if any
+  
     res.render('index', { title : "Polls" });
   });
 
@@ -108,26 +119,22 @@ router.get('/polls/polls', function(req, res, next){
 router.get('/polls/:id', function(req,res,next){
   var user = req.user.id;
   var pollId = req.params.id;
-  console.log('pollId',pollId);
     Poll.findById(pollId, '', { lean: true }, function(err, poll) {
     if(poll) {
       var temp_userVoted = false;
       for(c in poll.choices) {
-        var choice = poll.choices[c];
-        console.log('choice', choice); 
+        var choice = poll.choices[c]; 
         if(temp_userVoted){
           break;
         }
         for(v in choice.votes) {
           var vote = choice.votes[v];
-          console.log('vote', vote);
           if(vote.user === user) {
             temp_userVoted = true;
             break;
           }
         }
       }
-      console.log('temp_userVoted', temp_userVoted);
       var userVoted = temp_userVoted,
           userChoice,
           totalVotes = 0;
@@ -152,19 +159,38 @@ router.get('/polls/:id', function(req,res,next){
   });
 })
 
-router.post('/polls', function(req,res,next){
-  var reqBody = req.body,
-      choices = reqBody.choices.filter(function(v) { return v.text != ''; }),
-      pollObj = {question: reqBody.question, choices: choices};
-    var poll = new Poll(pollObj);
 
-    poll.save(function(err, doc) {
-    if(err || !doc) {
-      throw 'Error';
-    } else {
-      res.json(doc);
-      res.send({redirect: '/#/poll'+doc._id});
-    }   
+router.post('/polls', function(req,res,next){
+  yelp.search({ term: 'Asian food', location: 'Champaign' })
+    .then(function (data) {
+      //console.log(data.businesses);
+      var food = data.businesses;
+      var choices = [];
+      for(var i = 1; i < 4; i++){
+        choices.push({text: food[i].name, votes:[]});
+      }
+      console.log(choices);
+      var pollObj = {question: 'Question 3', choices: choices};
+      var poll = new Poll(pollObj);
+
+      poll.save(function(err, doc) {
+      if(err || !doc) {
+        throw 'Error';
+      } else {
+        res.json(doc);
+        res.send({redirect: '/#/poll'+doc._id});
+      }   
+    })
+    .catch(function (err) {
+      console.error(err);
+    });
+
+    //console.log("outer",food[1].name);
+  // var choices = [];
+  // if(data){
+  //   choices = [{data[1].name, votes:[]}, {data[2].name, votes:[]}, {data[3].name}];
+  // }
+  
   });
 })
 
