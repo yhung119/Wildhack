@@ -100,15 +100,15 @@ router.get('/login/facebook',
   // handle the callback after facebook has authenticated the user
 router.get('/login/facebook/callback',
   passport.authenticate('facebook', {
-    successRedirect : '/ppap',
+    successRedirect : '/home',
     failureRedirect : '/',
     scope: ['email', 'name']
   })
 );
 
-router.get('/ppap',function(req,res,next){
+/*router.get('/ppap',function(req,res,next){
   res.render('home',{user: req.user});
-})
+})*/
 
   // JSON API for list of polls
 router.get('/polls/polls', function(req, res, next){
@@ -186,7 +186,7 @@ router.post('/polls', function(req,res,next){
   console.log('user.preference',user.preference);
   var preference = user.preference;
   
-  yelp.search({ term: "Mexican Food", location: 'Champaign' })
+  yelp.search({ term: "Mexican Food", location: 'New York' })
       .then(function (data) {
         //console.log(data.businesses);
         var food = data.businesses;
