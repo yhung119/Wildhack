@@ -100,7 +100,7 @@ router.get('/login/facebook',
   // handle the callback after facebook has authenticated the user
 router.get('/login/facebook/callback',
   passport.authenticate('facebook', {
-    successRedirect : '/home',
+    successRedirect : '/',
     failureRedirect : '/',
     scope: ['email', 'name']
   })
@@ -188,7 +188,7 @@ router.post('/polls', function(req,res,next){
   
   yelp.search({ term: "Mexican Food", location: 'New York' })
       .then(function (data) {
-        //console.log(data.businesses);
+        console.log(data.businesses);
         var food = data.businesses;
         var choices = [];
         for(var i = 0; i < 5; i++){
